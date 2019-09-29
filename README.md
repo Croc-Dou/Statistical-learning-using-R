@@ -1,3 +1,3 @@
-# ISLR
+# Probability modeling and statistical learning using R
 
-My solutions and some other related practices.
+My solutions to ISLR Questions and some other related practices.

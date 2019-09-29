@@ -1,1 +1,3 @@
-# ISLR-my-solutions-by-R
+# ISLR
+
+My solutions and some other related practices.

@@ -1,0 +1,290 @@
+---
+title: "Probabilistic Modeling and Statistical Computing"
+author: "Doudou Zhang"
+date: "9/13/17"
+output:
+  slidy_presentation:
+    fig_width: 5.5
+    font_adjustment: 1
+    highlight: pygments
+    toc: yes
+  ioslides_presentation:
+    highlight: pygments
+  beamer_presentation:
+    highlight: tango
+    toc: yes
+---
+
+Pick six out of 49 number "at random"
+
+* Probabilistic model to simulate this 
+```{r}
+sample(49,6,replace = F)
+```
+* Find Prob(1,2,3,4,5,49 \textit{in any order}) 
+```{r}
+1/choose(49,6)
+```
+* Find Prob(1,2,3,4,5 are among the six numbers)
+```{r}
+44/choose(49,6)
+
+```
+## Language of Probability Modeling
+
+> Finite sample space $\mathcal{S} = \{x_1, x_2, \dots, x_N \}$ 
+
+> The $x_i$ are called __outcomes__.
+
+> Subsets of $\mathcal{S}$ are called __events__.
+
+
+_The sample space for drawing a single lotto ball is  $\{1, 2, \dots, 49\}$. What if 6 balls are drawn?_
+
+
+> Probability distribution $prob(X = x_i) = p_i$  
+
+_Probability distribution for drawing a single lotto ball? What if 6 balls are drawn?_
+
+### Sampling from a List
+
+Read in a CSV file with frequencies of first names that were used in 1992.
+
+The path to this file may be different on your computer.
+
+```{r}
+yob1992 <- read.csv("../Data/FirstNames/yob1992.txt", 
+      header=FALSE, stringsAsFactors=FALSE)
+names(yob1992) <- c("name","gender","count")
+head(yob1992)
+
+```
+* How many male names, how many female names?
+* How many babies were born with these names?
+* Note that names which were used less than five times are not listed.
+* Draw a sample of size 30 from this list. Use probabilities that are proportional to the counts. 
+
+## Random Variables
+
+Perform a random experiment with some sample space. The outcome is a _random variable_.
+
+_This can be anything (a number, a list of baby names, a randomly generated curve)_. 
+
+A random variable $X$ can be regarded as the result of a thought experiment.
+
+Usually, we want to process values of random variables computationally.
+
+Therefore, random variables often have numbers or vectors as values. 
+
+The set of possible values ("range") is not necessarily the same as a sample space!
+
+### Bernoulli Distribution
+
+One trial, success probability $p$
+
+$$
+Range  = \{0,1\}, \quad P(X = 0) = 1-p, \, P(X = 1) = p 
+$$
+
+### Binomial Distribution
+
+$n$ independent trials, success probability $p$.
+
+This is a sequence of $n$ independent Bernoulli trials. We record the total number of successes.
+
+$$
+Range = \{0,1, \dots, n\}, \quad P(X = k) = \binom{n}{k} p^k(1-p)^{n-k}
+$$
+
+### Doing this in R
+
+* __rbinom()__ for (pseudo) random numbers. _Results are from the range of the random variable._ 
+* __dbinom()__ for probability mass function pmf. _Results are numbers in $(0,1)$_.
+* __pbinom()__ for cumulative distribution function cdf. _Results are numbers in $[0,1]$_. 
+* __qbinom()__ for quantiles. _Results are from the range of the random variable_. 
+* Always need to specify $n$ and $p$ 
+* _What else do we need to specify for the pmf? For the cdf? For quantiles?_
+
+## Urns: A Standard Example
+
+
+Consider a box with $B$ black balls and $R$ red balls. Pick out balls at random, look at their color, throw them back in. Repeat $N$ times. Let $X = $ the number of red balls.
+
+> Are the assumptions for a sequence of independent Bernoulli trials satisfied?
+> What if we don't throw the balls back? 
+
+* Set $B = 25, R = 10$. Simulate such an experiment for $N = 20$.
+* Simulate 20 such experiments.
+* Simulate 20 experiments, one each for $N = 20, \dots, 39$.
+* Find $P(X = 10)$. 
+* Find $P(X \le 10)$ (two ways).
+* Find the 20th \%ile of the distribution of $X$.
+
+_What does that number mean in words?_
+
+### Plots
+
+* Histogram of simulated data
+* Plot of pmf
+* Plot of cdf
+* Empirical cumulative distribution function, plot
+
+
+## Questions
+* Can we compute __dbinom()}__ in terms of __pbinom()__
+* Can we compute __pbinom()__ in terms of __dbinom()__?
+* Can we do anything if only __rbinom()__ is available?
+
+## Random Variables with Discrete Infinite Range
+
+Example: Number of Bernoulli trials until first success.
+
+### Geometric distribution
+
+Perform independent trials with success probability $p$. $X =$ number of trials until first success. 
+
+_Alternative definition: number of failures until first success._
+
+$$
+Range  = \{1,2,3,\dots\}
+$$
+pmf: $P(X = i) = p(1-p)^{i-1}, \quad i = 0,1,2,3,\dots$ 
+
+__R__: __xgeom()__ where $x \in \{r,p,d,q\}$ 
+
+__Note that R uses the definition where__ $X= $ __number of failures until first success.__
+
+
+### Negative binomial distribution
+
+Perform independent trials with success probability $p$. $X =$ number of trials up to and including $k$ successes. 
+
+_Alternative definition: number of failures until_ $k$ _successes._ This is  used by __R__. 
+
+$$
+Range = \{k,k+1,k+2,k+3,\dots\}
+$$ 
+
+pmf for the definition used by __R__: $P(X = i) = \binom{i+k-1}{k-1} p^k(1-p)^i, \quad i \in \cR$ 
+
+__R__: __xnbinom()__ where $x\in\{r,p,d,q\}$ 
+
+
+
+### Poisson distribution
+
+Perform a large number $N$ trials with small success probability $p$. Set $\lambda = Np$. Let  $X = $ number of successes.  
+
+
+$$
+Range = \{0,1,2,3,\dots\}$$ 
+
+pmf: $P(X = i) = e^{-\lambda}\frac{\lambda^i}{i!}, \quad i \in \{0,1,2,\dots\}$ 
+
+__R__: __xpois()__ where $x \in \{r,p,d,q\}$ 
+
+* Raindrops falling on 100 cm$^2$ in 5 sec
+* Number of calls to 911 in DC in 1 hour 
+* Number of tweets with \#georgetown during 6 hours
+ 
+###  Poisson and Binomial Distributions
+
+_If $N$ is large and $p$ is small, expect Poisson($\lambda) \approx B(N,p)$ where $\boxed{\lambda = Np}$_   
+
+* The pmf, cdf and quantiles should all be similar. 
+* Simulations should have similar distributions. 
+* __How can we check that computationally?__
+
+> Examine computationally if two observed distributions appear to be the same.
+
+## Continuous Distributions
+
+
+### Describing continuous distributions
+The range usually is an interval $(a,b)$ or $[0,\infty)$ or $\mathbb{R}$. 
+
+__Probability density function (pdf)__  $p(x)$ 
+
+> __Probabilities are computed as integrals of the pdf.__
+
+For $c < d$ in the range of $X$,
+$$
+Prob(c \le X \le d) = \int_c^d p(t) dt
+$$
+
+> __The cdf is also an integral.__
+$$
+F(x) = Prob(X \le x) = \int_{-\infty}^x p(t) dt 
+$$
+
+### Uniform distribution $U(a,b)$
+
+Numbers from an interval $(a,b)$ are observed. _This is the range._ All observations are "equally likely".
+
+> __Range, pdf, R__
+
+$$Range = [a,b]$$ 
+
+pdf: $p(x) = \frac{1}{b-a} \quad (x \in (a,b)), \, p(x) = 0 \quad (x \notin (a,b))$ 
+
+cdf: $F(x) = \begin{cases}0 \quad (x < a) \\
+      \frac{x-a}{b-a} \quad (a \le x \le b) \\
+      1 \quad (x > b) 
+      \end{cases}$
+
+__xunif()__ where $x \in \{r,p,d,q\}$ 
+
+_Universal pseudo random number generator produces numbers  $u \sim U(0,1)$._
+
+_All other random numbers are obtained from this one._
+
+_E.g. $x \sim U(a,b)$ can be computed as $x = a + (b-a)u$._ 
+
+## Exponential distribution
+
+Models waiting time until a  random event. 
+
+__Assume that__ during an interval of length  $[T_0, T_1]$, the number of events has a Poisson($\lambda$) distribution. 
+
+Also assume that if $[T_0 , T_1] \cap [T_2,T_3] = \emptyset$, then the events occuring in these time intervals are independent. 
+
+> $\lambda$ is called the rate. 
+
+> Interpretation: About $\lambda$ events per unit time.
+
+> We expect the typical wait time to be $1/\lambda$. 
+
+$$Range =  [0,\infty) $$ 
+
+pdf: $p(x) = \lambda e^{-\lambda x} \quad (x \ge 0), \, p(x) = 0 \quad (x  < 0 )$ 
+
+cdf: $F(x) = 1 - e^{-\lambda x} \quad (x \ge 0), \, F(x) = 0 \quad (x  < 0 )$ 
+
+_R_: _xexp()_ where $x \in \{r,p,d,q\}$ 
+
+_What is the shape of the pdf? What is the shape of the cdf?_
+
+
+
+### Work with exponential distributions
+
+Given exponentially distributed random variables $X_1, \dots, X_k$. 
+
+_Think of waiting times for independent random alarm clocks  $1, \dots, k$ to go off._
+
+* Distribution of $\min ( X_1, \dots, X_k)$? _Wait for the first alarm to go off._ 
+* Distribution of $\max ( X_1, \dots, X_k)$? _Wait for the last alarm to go off._ 
+* Distribution of $ X_1 +  \dots + X_k)$? _Start clock $2$ when alarm $1$ goes off, start clock $3$ when alarm $2$ goes of etc._   
+
+> __Which of these are again exponentially distributed? Explore with a simulation.__
+
+## More continuous distributions
+
+* Normal, $\chi^2$, T distributions
+* Gamma, Beta, inverse Gamma
+* Lognormal, F, stable
+* Gumbel, Nakagami, Pareto, Weibull
+* _... and many more..._
+
+
+This is a test. The square root of 2 is `r round(sqrt(2),3)`.

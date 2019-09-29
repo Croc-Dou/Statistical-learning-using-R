@@ -1,0 +1,508 @@
+---
+title: "Probabilistic Modeling and Statistical Computing"
+author: "Doudou Zhang"
+date: "9/21/17"
+output:
+  slidy_presentation:
+    fig_width: 5.5
+    font_adjustment: 1
+    highlight: pygments
+    toc: yes
+  ioslides_presentation:
+    highlight: pygments
+  beamer_presentation:
+    highlight: tango
+    toc: no
+---
+
+## Expectation and Moments
+
+
+### Expected value of a random variable $X$
+
+> _Informal definition: Average outcome of observing $X$ many times_
+
+> _Each outcome $x$ in the range occur with prob. $p(x)$_
+
+$$
+E(X) = \sum_{x \in range} x \cdot p(x)
+$$ 
+
+> __If the range of $X$ is finite, this is a vaild definition (finite sum).__
+
+> __If the range of $X$ is infinite and discrete, this is a valid definition, assuming that the sum converges.__
+
+> __If $X$ is a continuous random variable, we need another definition.__
+
+
+### Some properties
+\begin{align}
+E(\alpha X) &= \alpha E(X) \\
+ E(X_1 + X_2 + X_3 + \dots + X_k) &= E(X_1) + cE(X_2) + \dots + E(X_k)
+\end{align}
+
+
+### Example: Binomial $B(n,p)$ distribution 
+
+$$
+E(X) = \sum_{i = 0}^n i \cdot p(X = i) = 
+\sum_{i = 0}^n i \cdot \binom{n}{i} p^i (1-p)^{n-i} = np \, .
+$$
+
+_Interpretation?_
+
+### Example: Geometric distribution. Let $X =$ number of trials up to first success, success probability $p$.
+
+$$
+E(X) = \sum_{i = 1}^\infty i \cdot p(X = i) = 
+\sum_{i = 1}^\infty i \cdot p (1-p)^{i-1} = \frac{1}{p} \, .
+$$
+
+### Example: Poisson distribution, rate = $\lambda$.
+
+$$
+E(X) = \sum_{i = 0}^\infty i \cdot p(X = i) = 
+\sum_{i = 0}^\infty i \cdot e^{-\lambda} \cdot \frac{\lambda^{-i}}{i!} = \lambda \, .
+$$
+
+> _Simulate this with R!_
+
+
+## Formal definition of expected value for continuous case
+
+Probability density function $p(x)$, defined on range of $X$. If the range is $[a,b]$:
+
+$$
+E(X) = \int_a^b x \cdot p(x) dx
+$$ 
+
+_If the range is $[a,\infty)$ or $(-\infty,\infty)$, replace the integral with an improper integral. All this assumes that the integral exists._   
+
+### Example: Uniform distribution on $(a,b)$
+
+The range is $[a,b]$. The  probability density function is $p(x) = \frac{1}{b-a}$ for $x \in  range$.
+
+$$
+E(X) = \int_a^b x \cdot \frac{1}{b-a} dx =  \dots  = \frac{a+b}{2}\, .
+$$
+
+### Example: Exponential distribution with rate $\lambda$ 
+
+The range is $[0,\infty)$. The  probability density function is $p(x) = \lambda e^{-\lambda x}$ for $x \in  range$.
+
+$$
+E(X) = \int_0^\infty x \cdot \lambda e^{-x \cdot\lambda} dx = \dots = \frac{1}{\lambda}
+$$
+
+
+> _Verify this with simulations!_
+
+### Cauchy distribution: the expected value does not exist
+
+Range = $(-\infty,\infty)$, prob. density function $p(x) = \frac{1}{\pi(1+x^2)}$. 
+
+Then 
+
+$$
+\int x \cdot p(x) \, dx = \int \frac{x}{\pi(1+x^2)} \, dx = \frac{1}{2 \pi} \log (1+x^2)
+$$
+Therefore 
+$$
+E(X) = \int_{-\infty}^\infty \frac{x}{\pi(1+x^2)} \, dx
+$$
+does not exist. _It would have to be $\infty - \infty$ which makes no sense._
+
+> _What happens if we try to find $E(X)$ with a simulation?_
+
+## Moments
+
+We can try to compute $E (f(X))$ where $f$ is a general function. Just replace $x$ with $f(x)$ in the defnitions.
+
+If $f(x) = x^k$, the result is called the $k^{th}$ __moment of $X$__ .
+
+## Examples 
+
+### Second moment of a binomial distribution
+
+$$
+E(X^2) = \sum_{i = 0}^n i^2 \cdot p(X = i) 
+= \sum_{i = 0}^n i^2 \cdot \binom{n}{i} p^i (1-p)^{n-i}  = np\cdot(1-p+np) \, .
+$$
+
+### Moments of exponential distribution
+
+We must compute 
+$$
+E(X^k) = \int_0^\infty \lambda x^k e^{-\lambda x} \, dx \quad (k = 2, 3, 4,\dots)
+$$
+
+Substitute $t = \lambda x, \, dt = \lambda dx$. The integral becomes
+$$
+E(X^k) = \int_0^\infty \lambda^{-k} \int_0^\infty t^k e^{-t} \, dt  = \lambda^{-k} (k-1)!
+$$
+
+For most standard probability distributions moments are well known and tabulated.
+
+[Moments of Poisson distribution](https://en.wikipedia.org/wiki/Poisson_distribution#Higher_moments)
+
+
+## Variance and standard deviation
+
+Definition of variance: 
+$$
+var(X) = E((X- E(X))^2) = E(X^2 - 2X E(X) + (E(X))^2) = E(X^2) - E(X)^2
+$$
+Definition of standard deviation:
+$$
+s(X) = \sqrt{var(X)}
+$$
+
+> _$s(X)$ has the same units as $X$._ 
+
+> _$X + const.$ has the same standard deviation as $X$._  
+
+> $s(\alpha X) = |\alpha| s(X)$
+
+### Examples
+* Binomial distribution $B(m,p)$: 
+$$ E(X) = np, \quad var(X) = np(1-p), \quad 
+s(X)= \sqrt{np(1-p)}
+$$
+* Poisson distribution with rate $\lambda$:  
+$$
+E(X) = \lambda, \, var(X) = \lambda, \, s(X) = \sqrt{\lambda}
+$$
+* Uniform distribution on $[a,b]$:
+$$
+E(X) = \frac{b+a}{2}, \quad var(X) = \frac{(b-a)^{2}}{12}, \quad s(X) = \frac{b-a}{\sqrt{12}}
+$$
+* Exponential distribution with rate $\lambda$:
+$$
+E(X) = \frac{1}{\lambda}, \, var(X) = \frac{1}{\lambda^2}, \, s(X) = \frac{1}{\lambda}
+$$
+
+##
+
+> _Check this with simulations!_
+
+> _How about second moments of Cauchy distribution? Do you think these are finite? Explore with a simulation._  
+
+## Independence and Conditioning
+
+### Conditional probability
+
+_Back to probabilities of events (no random variables)_ 
+
+Suppose $A$ and $B$ are events, $prob(B) > 0$. 
+
+* Conditional probability $P(A|B) = \frac{P(A \cap B)}{P (B)}$
+
+* The probability assigned to given to $A$ if we know that $B$ has occurred.
+
+* __Example:__ Roll a die once. Let $X$ be the result. $A = \{X > 3\}, \, B = \{X > 2\}, \, C = \{X < 5\}, \, D = \{2,4,6\}$. 
+
+* Thus $P(A) = \frac{1}{2}, \, P(B) = \frac{2}{3}, \, P(C) = \frac{2}{3}, \, P(D) = \frac{1}{2}$.
+\begin{align}
+P(A|B) &= \frac{P(A \cap B)}{P (B)} = \frac{1/2}{2/3} = \frac{3}{4} \\
+P(B|A) &= ??? \\
+P(C|B) &= \frac{P(C \cap B)}{P (B)} = \frac{P(\{3,4\})}{P(\{3,4,5,6\})} = \frac{1}{2} \\
+P(B|C) &= ???\\
+P(D|B) &= ???\\
+P(D) &= ???\\
+P(B|D) &= ???\\
+P(B) &= ???
+\end{align}
+
+## R Example
+
+* Consider a binomial distribution, $X \sim B(n,p)$. For $n = 50, p = .2$ find $P(X < 20)$ and $P(X < 20 | X > 10)$ and $P(X > 10| X < 20)$ with an exact computation.
+
+* Consider a binomial distribution, $X ~ B(n,p)$. For $n = 500, p = .1$ find 
+$P(X < 60), \, P(X < 60 | X > 30), \, P(X > 30 | X<60)$ with a simulation.
+
+* Consider birth names of 1992. Find P(first name is Evelyn), P(first name is Evelyn | female), P(female | first name is Evelyn). 
+
+## Independence
+
+Events $A$ and $B$ are called __independent__ if
+$$
+P(A \cap B) = P(A) P(B) \, . 
+$$
+If $P(A) = 0$ or $P(B) = 0$, this is always true.
+
+If $P(B) > 0$, this means 
+$$
+P(A|B) = \frac{P(A \cap B)}{P(B)} = P(A)
+$$ 
+_Knowledge about $B$ does not contain information about $A$._
+
+* __Example:__ Roll a die once. $A = \{X > 2\}$, $B = \{2,4,6\}$.
+
+## Another Example: Hypergeometric distribution 
+
+Consider $n$ independent trials with success probability $p$. Let   S~r~ be the 
+number of successes in the first $r$ trials. Thus $S_n =$ number of all successes. 
+
+Suppose $S_n = m$. _How many of these successes have occured during the first $k$ trials?_
+
+__What is $P(S_k = j | S_n = m)$?__
+
+By themselves, $S_n \sim B(n,p)$ and $S_k \sim B(k,p)$. We therefore know 
+$$
+P(S_n = m) = \binom{n}{m} p^m(1-p)^{n-m}, \, P(S_k = j) =  
+\binom{k}{j} p^j(1-p)^{k-j}
+$$
+
+## Need $P(S_n = m, \, S_k = j)$.
+
+Note: $S_n = m, S_k = j$ means  $j$ successes in $k$ trials followed by $m-j$ successes in  $n-k$ trials. So 
+$$
+P(S_k = j, S_n = m) = 
+\binom{k}{j}p^j(1-p)^{k-j}\cdot
+ \binom{n-k}{m-j}p^{m-j}(1-p)^{n-k-(m-j)}
+$$
+and therefore
+$$
+P(S_k = j| S_n = m) = \frac{P(S_k = j, S_n = m)}{P(S_n = m)}
+= \frac {\binom{k}{j} \binom{n-k}{m-j}} {\binom{n}{m}}
+$$
+__This does not depend on $p$.__
+
+__Hypergeometric distribution, used to model sampling without replacement.__
+
+Urn with $n$ balls: $m$ white balls, $n-m$ black balls. Draw $k$ balls without replacement. Let $Y$ be the number of white balls that are drawn. Then
+$$
+P(Y = j) = \frac {\binom{k}{j} \binom{n-k}{m-j}} {\binom{n}{m}}
+$$
+
+
+
+## Total probability
+Suppose $A$ is some event and $B_1, \dots, B_n$ are mutually exclusive events that make up the whole sample space. Then
+$$
+P(A) = P(A|B_1) P(B_1) + P(A|B_1)P(B_1) + \dots 
+ + P(A|B_n)P(B_n)
+$$
+
+> _Compute the probability by going over all possible cases._  
+
+* __Example:__  Assume 
+
+$$
+P(lawn.wet |  rain) = .9 , \, 
+P(lawn.wet | \sim rain) = .2, \,
+P(rain) = .3  \, .
+$$
+What is $P(lawn.wet)$?
+
+* __Answer:__ $0.9 \cdot 0.3 + 0.2 \cdot 0.7 = 0.41$.
+
+## Reversing the conditioning
+
+* Often, $B$ is a "cause" and $A$ is an "effect".
+
+* We know $P(A|B)$ from a "forward model" (cause leading to effect).
+
+* We observe the effect $B$ and would like to know whether $A$ was responsible . 
+
+* That is, we want to compute $P(B|A)$.
+
+$$
+P(B|A) = \frac{P(A \cap B)}{P(A)} = P(A|B) \frac{P(B)}{P(A)} = \frac{P(A|B)}{P(A)} P(B) 
+$$
+
+> _Interpretation: update the probability $P(B)$ by multiplying it with $\frac{P(A|B)}{P(A)}$._
+
+
+> _Often, $P(B)$ is known but $P(A)$ must be computed. That's because the "effect" $A$ could come from $B$, but it could also have other causes._
+
+* __Example:__ Suppose the lawn is wet. What is the probability that it has rained?
+
+$$
+P(rain | lawn.wet) = .9 \cdot \frac{.3}{.41} \approx .66
+$$
+
+
+
+## Prosecutor's fallacy
+
+In a city of a million people, somebody has committed a crime.
+
+10 people match the description of the criminal.
+
+One of the 10 is arrested.
+
+Let 
+ M be the event
+"this person matches the description".
+
+Let I be the event "this person is innocent". 
+
+Then $P(M|I) = \frac{9}{999,999} \approx 10^{-5}$. 
+
+The prosecutor says "if this person were innocent, then a match would be unlikely, thus he is guilty". 
+
+__This is a fallacy. We must compute $P(I|M)$, not $P(M|I)$. But $P(I|M) = \frac{9}{10}$.__
+
+That is, without additional evidence, we only have a 10% chance of having caught the right person.
+
+$P(I|M) = P(M|I) \cdot P(I) / P(M) = 0.9$ 
+
+
+## Example: Learning from data
+A box contains $N$ numbered balls, $N \in \{10,20,30\}$ is unknown.
+
+Let $A_k$ be the event $N = k$. We don't know $N$. Without further information, we assume that $P(A_{10}) = P(A_{20}) = P(A_{30})  = \frac{1}{3}$.
+
+Now draw two balls __with__ replacement. We observe 14 and 17. We should now update these probabilities.  
+
+This is done with the formula
+$$
+P(A_k|B)= P(B|A_k)\cdot \frac{P(A_k)}{P(B)}
+$$
+Since we observed $B$, these will be our new probabilities.
+
+_________
+
+* $P(A_{10}|B) = 0$ since $B$ is impossible if $A_{10}$ holds, and therefore $P(B|A_{10}) = 0$.
+
+* If $A_{20}$ is true, these two draws occur with probability $\frac{2}{400}$. If $A_{30}$ it is true, this happens with probability $\frac{2}{900}$.  
+
+* To continue, we need $P(B)$. Formula for total probability:
+
+$$ 
+P(B) = P(B|A_{20}) \cdot P(A_{20}) 
+ +  P(B|A_{30}) \cdot P(A_{30}) = \frac{1}{3} \frac{2}{400} + \frac{1}{3} \frac{2}{900} = \frac{13}{5400}
+ $$
+
+* Then 
+
+$$
+P(A_{20}|B) = \frac{P(B|A_{20})P(A_{20})}{P(B)} = \frac{\frac{2}{400} \frac{1}{3}}{\frac{13}{5400}} = \frac{9}{13}
+$$
+
+* Also,
+
+$$
+P(A_{30}|B) = \frac{P(B|A_{30})P(A_{30})}{P(B)} = \frac{\frac{2}{900} \frac{1}{3}}{\frac{13}{5400}} = \frac{4}{13}
+$$
+
+* __We have used the data to infer that $A_{10}$ is impossible (trivial) and that $A_{20}$ is more than twice as likely as $A_{30}$.__ 
+
+
+## Bayesian Networks
+
+### Wet lawn
+![](Figures/wetlawn0.png)
+
+_____
+
+### Traffic Fatalities
+
+![](Figures/transportation.jpg)
+
+_____
+
+### Explanation
+
+![](Figures/wetlawn0.png)
+
+* Nodes denote random events (here: Y/N)
+
+* Arrows denote conditioning
+
+* There is no rain $\to$ sprinkler arrow (but there could be one)
+
+* This is a __directed acyclic graph (dag)__
+
+## Specify probabilities
+
+... at nodes without "in" arrows
+
+![](Figures/wetlawn1.png)
+
+### Specify conditional probabilities 
+
+... at other nodes. 
+
+![](Figures/wetlawn2.png)
+
+_This means $P(rain|cloudy) = .8, \,P(rain|\sim cloudy) =.2$ and so on.  In practice, these have to be learned from data._
+
+
+### More conditional probabilities 
+
+![](Figures/wetlawn3.png)
+
+_Row sums are 1, but column sums need not be._
+
+
+### Yet more conditional probabilities 
+
+![](Figures/wetlawn00.png)
+
+_There are four possible conditioning events for wet grass._ 
+
+_The table is redundant, What could be left out?_
+
+
+
+## Compute some probabilities
+
+Probability that the grass is wet
+
+$$
+P(cloudy) = .5, \; P(\sim cloudy) = .5, \;  
+P(sprinkler) = .1\cdot .5 + .5 \cdot .5 = .3
+$$
+
+$$
+P(\sim sprinkler) = .7, \;  
+P(rain) = .8 \cdot .5 + .2 \cdot .5 = .5 = P(\sim rain)
+$$
+
+$$
+P(wet.lawn) = .99\cdot .3 \cdot .5 +.9 \cdot .3 \cdot .5 
+ + .9 \cdot .7 \cdot .5 + .0 \cdot .3 \cdot .5  
+\approx .6
+$$
+
+
+
+### Some inferences
+
+Suppose the sprinkler was on. Update all probabilities: 
+
+$$
+P(cloudy) = .5, \; P(\sim cloudy) = .5, \;
+P(sprinkler) = 1, \; 
+P(\sim sprinkler) = 0$$
+
+$$
+P(rain) =  .5 = P(\sim rain), \; 
+P(wet.lawn) = .99\cdot 1 \cdot .5 +.9 \cdot 1 \cdot .5 + .9 \cdot 0 \cdot .5 + .0 \cdot 0 \cdot .5   \approx .945
+$$
+
+
+Suppose the sprinkler was on. What is the probability that it rained?
+
+_Need to reverse the conditioning._
+$$
+P(cl|spr) = P(spr|cl) \cdot \frac{P(cl)}{P(spr)}
+ = .1 \cdot \frac{.5} {.7} \approx .07  
+$$
+We know that the sprinkler was on, so now $P(spr) = 1$ and $P(cl) = .07, \, P(\sim cl) = .93$. Then
+
+$$
+P(rain) = P(rain|cl) \cdot P(cl) + P(rain|\sim cl) \cdot P(\sim cl)
+ =.8 \cdot .07 + .2 \cdot .93 \approx .24
+$$
+
+## Questions
+
+* The lawn is wet. Find $P(cloudy)$.
+
+* What changes if the network looks like this:
+
+
+![](Figures/wetlawn4.png)

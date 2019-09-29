@@ -1,0 +1,317 @@
+---
+title: "Probabilistic Modeling and Statistical Computing"
+author: "Doudou Zhang"
+date: "9/27/17"
+output:
+  slidy_presentation:
+    fig_width: 5.5
+    font_adjustment: 1
+    highlight: pygments
+    toc: yes
+  ioslides_presentation:
+    highlight: pygments
+  beamer_presentation:
+    highlight: tango
+    toc: no
+---
+
+## Bayesian Networks
+
+### Conditional probabilities 
+
+![](Figures/wetlawn00.png)
+
+## Compute some probabilities
+
+__Parents__: A node A is a parent of a node B if there is an arrow from A to B. "cloudy" is a parent of "rain" and of "sprinkler". "sprinkler" and "rain" are both parents of "wet lawn". _"cloudy" is not a parent of "wet lawn", it is an ancestor._     
+
+__Conditional independence:__ Given two nodes that have common "parents", all their outcomes are independent __if the outcomes of the parents are given.__
+
+_If we know whether it is cloudy or not, the events "sprinkler on" and "it rains" will happen independently. But when this is not yet known, the events are not independent, because they have a common cause._  
+
+We write $C$ for "cloudy", $\sim C$ for "not cloudy", $S$ for "sprinkler on", $R$ for "rain", $W$ for "wet lawn" etc.
+
+Thus: 
+
+$$
+\begin{aligned}
+P(C) &= .5, \; P(\sim C) = .5 \\  
+P(S) &= P(S|C) \cdot P(C) +
+P(S|\sim C) \cdot P(\sim C)\\
+&= .1\cdot .5 + .5 \cdot .5 = .3\\
+P(\sim S) &= .7 \\
+P(R) &= .8 \cdot .5 + .2 \cdot .5 = .5 \\
+P(\sim R)&= 0.5\\
+\end{aligned}
+$$
+
+Joint probability of $R \& S$:
+
+$$
+\begin{aligned}
+P(R \& S) &= P(R \& S|C) \cdot P(C) + P(R \& S | \sim C)\cdot P(\sim C)\\
+&= P(R|C)P(S|C) \cdot P(C) + P(R|\sim C)P(S|\sim C) P(\sim C)\\
+&= .8\cdot .1 \cdot .5 + .2 \cdot .5 \cdot .5 = .09
+\end{aligned}
+$$
+Note that $P(R \&S) \ne P(R)P(S)$.
+
+### Probability that the grass is wet
+
+We must first compute all joint probabilities $P(R \& S), \dots, P(\sim R \& \sim S)$. We already know $P(R \sim S) = .09$. 
+
+$$
+\begin{aligned}
+P(\sim R \& S) &= P(\sim R \& S|C) \cdot P(C) + P(\sim R \& S | \sim C)\cdot P(\sim C)\\
+&= P(\sim R|C)P(S|C) \cdot P(C) + P(\sim R|\sim C)P(S|\sim C) P(\sim C)\\
+&= .2\cdot .1 \cdot .5 + .8 \cdot .5 \cdot .5 = .21\\
+P(R \& \sim S) &= P(R \& \sim S|C) \cdot P(C) + P(R \& \sim S | \sim C)\cdot P(\sim C)\\
+&= P(R|C)P(\sim S|C) \cdot P(C) + P(R|\sim C)P(\sim S|\sim C) P(\sim C)\\
+&= .8\cdot .9 \cdot .5 + .2 \cdot .5 \cdot .5 = .41\\
+P(\sim R \& \sim S) &= P(\sim R \& \sim S|C) \cdot P(C) + P(\sim R \&\sim  S | \sim C)\cdot P(\sim C)\\
+&= P(\sim R|C)P(\sim S|C) \cdot P(C) + P(\sim R|\sim C)P(\sim S|\sim C) P(\sim C)\\
+&= .2\cdot .9 \cdot .5 + .8 \cdot .5 \cdot .5 = .29
+\end{aligned}
+$$
+Therefore
+$$
+\begin{aligned}
+P(W) &= P(W|S \& R)\cdot P(S \& R) + \dots + P(W | \sim S \& \sim R) \cdot P(\sim S \& \sim R)\\
+&= .99\cdot .09  +.9 \cdot .21 + .9 \cdot .41 + 0 \cdot .29
+= .6471
+\end{aligned}
+$$
+
+
+### Suppose the sprinkler was on. Update all probabilities: 
+
+$P(C) = .5$ becomes $P(C | S) = P(S|C) \cdot \frac{P(C)}{P(S)} = .1 \cdot\frac{.5}{.3} = .167$. Also $P(\sim C)$ is replaced by $P(\sim C|S) = .833$.
+
+Then $P(R) = .5$ becomes $P(R|C)P(C|S) = .8\cdot .167 = .133$. 
+
+And since we know that $S$ is true, we now have
+$$
+P(R \& S) = P(R) = .133, \, P(\sim R \& S) = .867, \, 
+P(R \& \sim S) = P(\sim R \& \sim S) = 0 \, .
+$$
+Therefore
+$$
+\begin{aligned}
+P(W) &= P(W|R\&S)P(R\&S) + P(W|\sim R\&S)P(\sim R\&S)\\
+&= .99\cdot .133 + .9 \dot .867 = .911 \, .
+\end{aligned}
+$$
+
+### Suppose the sprinkler was on. What is the probability that it rained?
+
+This probability is now 0.133. Before we knew that the sprinkler was on, it was 0.5. It been "explained away".
+
+
+## Questions
+
+* The lawn is wet. Find $P(C)$.
+
+* The lawn is wet. Find $P(R)$.
+
+## Markov Chains as Bayesian Network
+
+Consider the Bayesian network
+$$
+X_0 \rightarrow X_1 \rightarrow X_2 \rightarrow X_3 \rightarrow X_4 \rightarrow \dots
+$$
+where all the $X_i$ have the same range ("state space") and conditional distribution of $X_i$ depends only on values of $X_{i-1}$. 
+
+__Markov Property__ 
+
+$$
+P(X_i = x|X_{i-1} = x_{i-1}, X_{i-2} = x_{i-2},\dots) =  P(X_i = x|X_{i-1} = x_{i-1})
+$$
+_Think of $i$ as time._
+
+_To assess the distribution of $X_i$, we only need to know $X_{i-1}$._
+
+_The more distant past does not contribute additional information._
+
+
+## Example: Simple Random Walk
+
+* Each $X_i$ has range $\{\dots, -2,-1,0,1,2, \dots\}$
+
+* Start at 0: $P(X_0 = 1) = 1$
+
+* Take steps to left or right with probabilities $p$ and $1-p$
+$$
+P(X_{i+1} = x+1|X_i = x) = p, \quad  P(X_{i+1}=x-1|X_i = x) = 1-p 
+$$
+We can also write this as 
+$$
+X_1 = X_0 + Y_1, \quad X_2 = X_1 + Y_2, \dots
+$$
+where the $Y_i = \pm 1$ are independent of each other and of each $X_{i-1}$.
+
+## Example: Roulette
+
+![](Figures/AmericanRoulette.jpg)
+
+## Roulette strategy: Always bet on Red
+
+* You win the amount that you bet if a red number comes up. You lose the bet if a non-red number comes up. 
+
+* There are 38 possible outcomes. 18 are red, 18 are black, and 2 are green (0 and 00).
+
+* Start with $X_0 = \$200$. Always bet \$1 on Red. $X_i=$ amount after $i$ bets.
+
+
+* Win \$1 with $P = 18/38$, lose \$1 with $P = 20/38$.
+
+Therefore
+
+$$
+\begin{aligned}
+P(X_{i+1} = x+1|X_i = x) &= 18/38 = p \\
+P(X_{i+1}=x-1|X_i = x) &= 20/38 = 1-p
+\end{aligned}
+$$
+Stop when you have lost all your money or when you have reached \$1,000.
+
+## Simulation and Analysis
+
+_Simulate this._
+
+Analytic approach:
+
+We can write
+$$
+X_1 = X_0 + Y_1, \quad X_2 = X_1 + Y_2, \dots
+$$
+where the $Y_i$ are independent, $P(Y_i = 1) = 18/38,\, P(Y_i = -1)  = 20/38$.
+
+Thus  
+$$
+\begin{aligned}
+E(Y_i) &= 18/38 \cdot 1 + 20/38 \cdot (-1) = - 1/19 \\
+E(X_{i}) &= E(X_{i-1}) - 1/19
+\end{aligned}
+$$
+__What does this mean?__
+
+
+## St. Petersburg System
+
+* Start with $X_0 = \$200$. Always bet on Red, starting with \$1. 
+
+* After a loss, double your last bet.
+
+* After a win, bet \$1 again.
+
+Stop when you have lost all your money or when you have reached \$1,000.
+
+_What is the rationale?_
+
+_What is the right state space? How to simulate this?_
+
+## Time-Homogeneous Markov Chain
+
+Assume the state space = range of each $X_i$ is finite and the same, $\{1,2,\dots,n\}$. 
+
+Need to specify all 
+$$
+P(X_{i+1} = k | X_i = j), 1 \le j,k \le n
+$$
+For each $i$, this is a $n \times n$ matrix. 
+
+__Now assume this is independent of $i$.__
+
+__Transition matrix__, probability of transition $j \rightsquigarrow k$ 
+$$
+P_{jk} = P(X_{i+1} = k | X_i = j), 1 \le j,k \le n
+$$
+ 
+
+### Example: Joe's Diet
+
+* Joe only eats pizza, chocolate ice cream, and kimchi. He eats once a day.
+
+* On days after eating kimchi, he always eats ice cream. 
+
+* On days after ice cream, he eats pizza or ice cream with equal probability.
+
+* On days after pizza, he eats kimchi 20\% of the time and another pizza 80\% of the time.
+
+* __Set up the transition matrix!__
+ 
+
+
+### Diet Transition Matrix
+
+State space: 
+$$
+\{kimchi \, \simeq 1,\,  ice \, cream  \, \simeq 2, \, 
+pizza  \, \simeq 3\}
+$$ 
+Transition matrix:
+$$
+P = \left(\begin{matrix}
+0 & 1 & 0 \\
+0 & .5 & .5 \\
+.2 & 0 & .8
+\end{matrix}
+\right)
+$$
+
+_Today Joe had pizza. What is the probability that he will eat ice cream in three days? This is $P(X_3 = 2 | X_0 = 3)$._
+
+
+## Transition Probabilities
+
+Let $P$ be the transition matrix of a time homogeneous Markov chain. Then for each $i,j,k$
+$$
+P(X_{i+2} = k | X_i = j) = \left(P^2\right)_{jk} \, . 
+$$
+More generally
+$$
+P(X_{i+r} = k | X_i = j) = \left(P^r\right)_{jk} \, . 
+$$
+for $r = 1, \, 2, \, 3, \dots$.
+
+### Proof for $r = 2$
+
+Suppose $X_i = j$ (fixed).  Then 
+$$
+\begin{aligned}
+P(X_{i+1} = \ell) &= P(X_{i+1} = \ell| X_i = j) = P_{j \ell}\\
+P(X_{i+2} = k| X_{i+1} = \ell) &= P_{\ell k} \\
+P(X_{i+2} = k| X_i = j) &= P_{j1}P_{1k} + P_{j2}P_{2k} + P_{j3}P_{3k} + \dots
+\end{aligned}
+$$
+The right hand side is the $(j,k)$ entry of $P^2$ by definition of the matrix product. __End of proof.__
+
+### Joe's diet matrix with R
+
+## Another random walk}
+
+![](Figures/maze0.png)
+
+Zog the caveman explores a new cave, starting in room 1 (lower left).
+
+Every minute, he either stays in the current room (probability 1/2) or moves into one of the directly adjacent rooms with equal probability. 
+
+He cannot walk through walls.
+
+There is a monster in room 9 that will eat him if he enters the room.
+
+> _Set up the transition matrix and find the probability that he is still alive after half an hour._
+
+
+
+## Web surfing as random walk
+
+* State space = set of all Internet websites. _How many states are there?_
+
+* State of a random web surfer = the site she is looking at.
+
+* Transitions: with probability $1 - D$, click on one of the links on the page, all equally likely. With remaining probability $D$, jump to any other site on the web (i.e., get bored).
+
+PageRank (US patent 6285999 B1), https://www.google.com/patents/US6285999 = Google's method for estimating long-term probabilities of visits to sites. 
+
+__How can this be monetized?__
